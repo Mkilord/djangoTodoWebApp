@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+        }
+        .edit-form {
+            margin-top: 10px;
+            display: none;
+        }
+        table {
+            margin-bottom: 10px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        /* Style for both Edit and Delete buttons */
+        .action-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        .action-button.edit-button {
+            margin-bottom: 10px;
+            background-color: #007bff; /* Change the color for Edit button */
+        }
+    </style>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <table>
+        <colgroup>
+            <col style="width: 90%;">
+            <col style="width: 10%;">
+        </colgroup>
+        <tr>
+            <th>Task</th>
+            <th>Action</th>
+        </tr>
+        {% for task in tasks %}
+        <tr>
+            <td>
+                <span id="task-{{ task.id }}-title">{{ task.title }}</span>
+            </td>
+            <td>
+                <a href="#" class="edit-link" data-task-id="{{ task.id }}">
+                    <button class="action-button edit-button">Edit</button> <!-- Use the edit-button class -->
+                </a>
+                <form method="POST" action="{% url 'delete_task' task.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="action-button">Delete</button> <!-- Add the action-button class -->
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <form method="POST" action="{% url 'add_task' %}">
+        {% csrf_token %}
+        <input type="text" name="title" placeholder="Add a new task" required>
+        <button type="submit">Add</button>
+    </form>
+    <div class="edit-form" id="edit-form">
+        <form method="POST" action="" id="edit-task-form">
+            {% csrf_token %}
+            <input type="text" name="title" id="edit-task-title" required>
+            <button type="submit" class="action-button edit-button">Save</button> <!-- Use the edit-button class -->
+            <button type="button" class="cancel-edit action-button">Cancel</button> <!-- Add the action-button class -->
+        </form>
+    </div>
+
+    <script>
+        function showEditForm(taskId) {
+            const taskTitle = document.getElementById(`task-${taskId}-title`).textContent;
+            const editForm = document.getElementById('edit-form');
+            const editTaskTitle = document.getElementById('edit-task-title');
+            const editTaskForm = document.getElementById('edit-task-form');
+
+            editTaskTitle.value = taskTitle;
+            editTaskForm.action = `{% url 'edit_task' 0 %}`.replace('0', taskId);
+            editForm.style.display = 'block';
+        }
+
+        function hideEditForm() {
+            const editForm = document.getElementById('edit-form');
+            editForm.style.display = 'none';
+        }
+
+        const editLinks = document.querySelectorAll('.edit-link');
+        const cancelEditButton = document.querySelector('.cancel-edit');
+
+        editLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const taskId = link.getAttribute('data-task-id');
+                showEditForm(taskId);
+            });
+        });
+
+        cancelEditButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideEditForm();
+        });
+    </script>
+</body>
+</html>
